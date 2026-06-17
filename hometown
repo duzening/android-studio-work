@@ -1,0 +1,3792 @@
+import 'package:flutter/material.dart';
+import 'dart:math' as math;
+
+void main() {
+  runApp(const ShandongTravelApp());
+}
+
+class ShandongTravelApp extends StatelessWidget {
+  const ShandongTravelApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Explore Shandong',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        useMaterial3: true,
+        fontFamily: 'Roboto',
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF0A6E6E)),
+        scaffoldBackgroundColor: const Color(0xFFF5F6FA),
+      ),
+      home: const SplashPage(),
+    );
+  }
+}
+
+// ==================== 设计令牌（统一视觉规范） ====================
+
+class AppTheme {
+  // 圆角
+  static const double radiusS = 12;
+  static const double radiusM = 18;
+  static const double radiusL = 24;
+  static const double radiusXL = 32;
+
+  // 间距
+  static const double spaceXS = 6;
+  static const double spaceS = 10;
+  static const double spaceM = 16;
+  static const double spaceL = 24;
+  static const double spaceXL = 32;
+
+  // 阴影
+  static List<BoxShadow> cardShadow(Color color, {double opacity = 0.08}) => [
+    BoxShadow(
+      color: color.withOpacity(opacity),
+      blurRadius: 16,
+      offset: const Offset(0, 6),
+    ),
+  ];
+
+  static List<BoxShadow> softShadow = [
+    BoxShadow(
+      color: Colors.black.withOpacity(0.04),
+      blurRadius: 12,
+      offset: const Offset(0, 4),
+    ),
+  ];
+}
+
+// ==================== 数据模型 ====================
+
+class CityData {
+  final String name;
+  final String subtitle;
+  final String titleTag;
+  final String description;
+  final Color color;
+  final Color secondaryColor;
+  final IconData icon;
+  final List<String> tags;
+  final List<Attraction> attractions;
+  final List<Food> foods;
+  final List<RoutePlan> routes;
+  final String imageUrl;
+  final String heroEmoji;
+
+  const CityData({
+    required this.name,
+    required this.subtitle,
+    required this.titleTag,
+    required this.description,
+    required this.color,
+    required this.secondaryColor,
+    required this.icon,
+    required this.tags,
+    required this.attractions,
+    required this.foods,
+    required this.routes,
+    required this.imageUrl,
+    required this.heroEmoji,
+  });
+}
+
+class Attraction {
+  final String name;
+  final String description;
+  final int rating;
+  final List<String> suitableFor;
+  final String imageUrl;
+  final String emoji;
+
+  const Attraction({
+    required this.name,
+    required this.description,
+    required this.rating,
+    required this.suitableFor,
+    required this.imageUrl,
+    required this.emoji,
+  });
+}
+
+class Food {
+  final String name;
+  final String area;
+  final int rating;
+  final int price;
+  final String description;
+  final String emoji;
+  final String imageUrl; // ✨ 新增字段
+
+  const Food({
+    required this.name,
+    required this.area,
+    required this.rating,
+    required this.price,
+    required this.description,
+    required this.emoji,
+    required this.imageUrl,
+  });
+}
+
+class RoutePlan {
+  final String title;
+  final List<RouteItem> items;
+
+  const RoutePlan({required this.title, required this.items});
+}
+
+class RouteItem {
+  final String time;
+  final String place;
+  final String icon;
+
+  const RouteItem({required this.time, required this.place, required this.icon});
+}
+
+// ==================== 数据 ====================
+
+final List<CityData> cities = [
+  CityData(
+    name: '东营',
+    subtitle: '黄河入海口 · 生态之城',
+    titleTag: '生态之城',
+    description:
+    '东营以黄河文化、湿地生态和候鸟景观闻名，是中国暖温带最完整、最广阔的湿地生态系统，自然爱好者与摄影爱好者的天堂。',
+    color: const Color(0xFF2E7D32),
+    secondaryColor: const Color(0xFF66BB6A),
+    icon: Icons.park,
+    heroEmoji: '🌿',
+    imageUrl:
+    'https://p5-flow-imagex-sign.byteimg.com/labis/image/622f351c4084386ebdcec039a09b3740~tplv-a9rns2rl98-pc_smart_face_crop-v1:512:384.image?lk3s=8e244e95&rcl=20260608154225FDC3448F665A746C2E02&rrcfp=cee388b0&x-expires=2096264551&x-signature=U9RkOMfX6j3pwZ5IcVD94Tw%2F4Eo%3D',
+    tags: ['黄河文化', '湿地生态', '候鸟天堂', '生态摄影', '自然探索'],
+    attractions: const [
+      Attraction(
+        name: '黄河口生态旅游区',
+        description:
+        '中国暖温带最完整、最广阔、最年轻的湿地生态系统之一，每年有数百万候鸟在此栖息迁徙，是观鸟和生态摄影的绝佳地点。',
+        rating: 5,
+        suitableFor: ['摄影爱好者', '家庭旅游', '自然探索', '观鸟'],
+        imageUrl:
+        'https://p5-flow-imagex-sign.byteimg.com/labis/image/bc2d2d18396dce7518c27e14dea1c29b~tplv-a9rns2rl98-pc_smart_face_crop-v1:512:384.image?lk3s=8e244e95&rcl=20260608154225FDC3448F665A746C2E02&rrcfp=cee388b0&x-expires=2096264553&x-signature=7MY62vZij3GbIq93bQqCCVin6pU%3D',
+        emoji: '🦅',
+      ),
+      Attraction(
+        name: '天鹅湖旅游度假区',
+        description:
+        '冬季天鹅的重要栖息地，洁白的天鹅与碧蓝湖水相映成趣，景色安静优美，是东营生态旅游的重要名片。',
+        rating: 5,
+        suitableFor: ['观鸟', '摄影', '情侣', '亲子'],
+        imageUrl:
+        'https://p5-flow-imagex-sign.byteimg.com/tos-cn-i-be4g95zd3a/825799005655531570~tplv-a9rns2rl98-pc_smart_face_crop-v1:512:384.image?lk3s=8e244e95&rcl=20260608154225FDC3448F665A746C2E02&rrcfp=cee388b0&x-expires=2096264557&x-signature=Wkg5G9L8TjRSfG6OB0%2BhgoZN09s%3D',
+        emoji: '🦢',
+      ),
+      Attraction(
+        name: '孙子文化馆',
+        description: '系统展示孙子历史与文化的综合性博物馆。',
+        rating: 4,
+        suitableFor: ['文化学习', '亲子教育', '城市探索'],
+        imageUrl:
+        'https://p5-flow-imagex-sign.byteimg.com/isp-i18n-media/image/74a3dae01630c7729a810e3cf01398c0~tplv-a9rns2rl98-pc_smart_face_crop-v1:512:384.image?lk3s=8e244e95&rcl=20260608154225FDC3448F665A746C2E02&rrcfp=cee388b0&x-expires=2096264556&x-signature=0VUco5KbPueWmTLuIYNutIpbCjQ%3D',
+        emoji: '🏛️',
+      ),
+    ],
+    foods: const [
+      Food(
+        name: '黄河口大闸蟹',
+        area: '东营区·河蟹一条街',
+        rating: 5,
+        price: 68,
+        description: '黄河入海口独特水质孕育的大闸蟹，肉质鲜美、蟹黄饱满，是东营最具代表性的味觉体验。',
+        emoji: '🦀',
+        imageUrl:
+        'https://p5-flow-imagex-sign.byteimg.com/isp-i18n-media/image/cbd2fc71c529b8dcd9ae45af30c6c311~tplv-a9rns2rl98-pc_smart_face_crop-v1:512:384.image?lk3s=8e244e95&rcl=20260608154225FDC3448F665A746C2E02&rrcfp=cee388b0&x-expires=2096264558&x-signature=QPLiX%2BIA%2BN31IvgER8QyN9kvcnU%3D',
+      ),
+      Food(
+        name: '广饶肴驴肉（非遗）',
+        area: '广饶县·老字号街',
+        rating: 4,
+        price: 28,
+        description: '百年老味道，肉质紧实、香而不腻，是 “地上龙肉” 的绝佳诠释',
+        emoji: '🍜',
+        imageUrl:
+        'https://p5-flow-imagex-sign.byteimg.com/tos-cn-i-6w9my0ksvp/9dc410383f3447feaf8e3b4b4c5f4562~tplv-a9rns2rl98-pc_smart_face_crop-v1:500:375.image?lk3s=8e244e95&rcl=20260608154225FDC3448F665A746C2E02&rrcfp=cee388b0&x-expires=2096264560&x-signature=ewNUNKzqjFTQemEyNucjrR1IUws%3D',
+      ),
+      Food(
+        name: '史口烧鸡',
+        area: '史口',
+        rating: 5,
+        price: 45,
+        description: '鲁北名吃，老汤卤制 + 砂糖熏烤，色泽金黄、酥烂脱骨、香到入骨。',
+        emoji: '🦞',
+        imageUrl:
+        'https://p5-flow-imagex-sign.byteimg.com/tos-cn-i-6w9my0ksvp/db9f0e2aec064a9da8ed963d8061f1d3~tplv-a9rns2rl98-pc_smart_face_crop-v1:500:375.image?lk3s=8e244e95&rcl=20260608154225FDC3448F665A746C2E02&rrcfp=cee388b0&x-expires=2096264560&x-signature=YFop3JfLxAX18CYpfb%2BmIsxaQrI%3D',
+      ),
+    ],
+    routes: const [
+      RoutePlan(
+        title: '东营生态一日游',
+        items: [
+          RouteItem(time: '08:30', place: '黄河口生态旅游区·晨间观鸟', icon: '🐦'),
+          RouteItem(time: '11:30', place: '河口区海鲜特色午餐', icon: '🍽️'),
+          RouteItem(time: '13:30', place: '天鹅湖旅游度假区', icon: '🦢'),
+          RouteItem(time: '16:00', place: '黄河文化馆参观', icon: '🏛️'),
+          RouteItem(time: '18:30', place: '黄河口大闸蟹', icon: '🦀'),
+          RouteItem(time: '20:00', place: '湿地星空夜景', icon: '✨'),
+        ],
+      ),
+    ],
+  ),
+  CityData(
+    name: '烟台',
+    subtitle: '仙境海岸线 · 海滨之城',
+    titleTag: '海滨之城',
+    description:
+    '烟台拥有山东最迷人的海岸线，葡萄酒文化享誉全国，海鲜资源极为丰富，蓬莱仙阁承载着千年神话传说。',
+    color: const Color(0xFF1565C0),
+    secondaryColor: const Color(0xFF42A5F5),
+    icon: Icons.waves,
+    heroEmoji: '🌊',
+    imageUrl:
+    'https://p5-flow-imagex-sign.byteimg.com/labis/image/f143653365eac964a93a69aec0362b9e~tplv-a9rns2rl98-pc_smart_face_crop-v1:512:384.image?lk3s=8e244e95&rcl=20260608154440EEAB742B07876C30C725&rrcfp=cee388b0&x-expires=2096264688&x-signature=Gi9SeW995PgxsOFnxIX0%2FRrzP5I%3D',
+    tags: ['葡萄酒之都', '海鲜天堂', '仙境蓬莱', '海岛探索', '浪漫海岸'],
+    attractions: const [
+      Attraction(
+        name: '蓬莱阁',
+        description:
+        '中国著名的神话仙境，"八仙过海"的传说发源地，建筑雄伟壮观，登高可览渤黄两海交汇奇观，素有"人间仙境"之美誉。',
+        rating: 5,
+        suitableFor: ['历史文化', '拍照打卡', '家庭旅游', '神话探索'],
+        imageUrl:
+        'https://p5-flow-imagex-sign.byteimg.com/tos-cn-i-6w9my0ksvp/44d6507b0ba448498d0d0bce585e1d28~tplv-a9rns2rl98-pc_smart_face_crop-v1:512:384.image?lk3s=8e244e95&rcl=20260608154440EEAB742B07876C30C725&rrcfp=cee388b0&x-expires=2096264689&x-signature=C0yhNZsm%2FPm390R%2BM4IDZi8r0eM%3D',
+        emoji: '🏯',
+      ),
+      Attraction(
+        name: '养马岛',
+        description:
+        '烟台热门海岛景点，海边风景优美，骑行道蜿蜒曲折，适合骑行、散步和情侣约会，日落时分最为浪漫。',
+        rating: 5,
+        suitableFor: ['情侣约会', '骑行', '海边散步', '摄影'],
+        imageUrl:
+        'https://p5-flow-imagex-sign.byteimg.com/labis/image/58d81b3fd37aaf1cee2e3b834bfc92a2~tplv-a9rns2rl98-pc_smart_face_crop-v1:512:384.image?lk3s=8e244e95&rcl=20260608154440EEAB742B07876C30C725&rrcfp=cee388b0&x-expires=2096264691&x-signature=nPyUMeKQVEy3rBvhVDhJIInZE4Y%3D',
+        emoji: '🏝️',
+      ),
+      Attraction(
+        name: '烟台山景区（4A，免费）',
+        description: '烟台地标与名称由来，近代领事馆聚集地。看点：欧式建筑群、冰心纪念馆、灯塔，俯瞰全城与海湾。',
+        rating: 4,
+        suitableFor: ['建筑爱好者', '文化探索', '情侣', '品鉴体验'],
+        imageUrl:
+        'https://p5-flow-imagex-sign.byteimg.com/labis/image/8b04ba240839c8ed994380bbbd4b090f~tplv-a9rns2rl98-pc_smart_face_crop-v1:512:384.image?lk3s=8e244e95&rcl=20260608154440EEAB742B07876C30C725&rrcfp=cee388b0&x-expires=2096264692&x-signature=Jy6XHMLJWWvsuK%2BDlApmPu%2BuzW0%3D',
+        emoji: '🍷',
+      ),
+    ],
+    foods: const [
+      Food(
+        name: '鲅鱼水饺',
+        area: '芝罘区·老街食堂',
+        rating: 5,
+        price: 25,
+        description: '烟台最具代表性的传统美食，鲜活鲅鱼制馅，皮薄馅厚，鲜味十足，是每个来烟台的游客必打卡的美食。',
+        emoji: '🥟',
+        imageUrl:
+        'https://p5-flow-imagex-sign.byteimg.com/labis/image/495c31b61210008dd2c568824c8b587f~tplv-a9rns2rl98-pc_smart_face_crop-v1:512:384.image?lk3s=8e244e95&rcl=20260608154440EEAB742B07876C30C725&rrcfp=cee388b0&x-expires=2096264697&x-signature=FtvvM3Gi1lsNIThEx4sDpTQRbOA%3D',
+      ),
+      Food(
+        name: '海肠捞饭（必吃）',
+        area: '莱山区',
+        rating: 5,
+        price: 45,
+        description: 'Q 弹海肠 + 韭菜 + 肉沫，浇米饭拌匀，鲜脆爽口，烟台城市名片。',
+        emoji: '🦪',
+        imageUrl:
+        'https://p5-flow-imagex-sign.byteimg.com/labis/image/3f3b5e40cc44a85921a3fa796d5ce205~tplv-a9rns2rl98-pc_smart_face_crop-v1:512:384.image?lk3s=8e244e95&rcl=20260608154440EEAB742B07876C30C725&rrcfp=cee388b0&x-expires=2096264695&x-signature=DDnPoCuQhMZxm7P9%2BVQqKUSacE0%3D',
+      ),
+      Food(
+        name: '蓬莱小面（省级非遗）',
+        area: '蓬莱',
+        rating: 4,
+        price: 35,
+        description: '手工抻制，细如银丝，筋韧爽滑，鱼卤 / 肉卤鲜美。',
+        emoji: '🍜',
+        imageUrl:
+        'https://p5-flow-imagex-sign.byteimg.com/labis/image/33aa8d8f924314dacb28798d505c15a2~tplv-a9rns2rl98-pc_smart_face_crop-v1:512:384.image?lk3s=8e244e95&rcl=20260608154440EEAB742B07876C30C725&rrcfp=cee388b0&x-expires=2096264698&x-signature=yny4GiRCh1vR6YyPOoj6OSMDOgM%3D',
+      ),
+    ],
+    routes: const [
+      RoutePlan(
+        title: '烟台仙境浪漫两日游',
+        items: [
+          RouteItem(time: '第一天 09:00', place: '蓬莱阁·仙境探访', icon: '🏯'),
+          RouteItem(time: '12:00', place: '蓬莱特色海鲜午餐', icon: '🍽️'),
+          RouteItem(time: '14:30', place: '张裕葡萄酒博物馆', icon: '🍷'),
+          RouteItem(time: '第二天 08:30', place: '养马岛骑行', icon: '🚴'),
+          RouteItem(time: '12:00', place: '岛上新鲜海鲜午餐', icon: '🦞'),
+          RouteItem(time: '15:00', place: '第一海水浴场', icon: '🏖️'),
+          RouteItem(time: '19:00', place: '夜市海鲜烧烤', icon: '🔥'),
+        ],
+      ),
+    ],
+  ),
+  CityData(
+    name: '聊城',
+    subtitle: '江北水城 · 文化之城',
+    titleTag: '文化之城',
+    description: '聊城有运河文化、古城风貌与水城特色，古运河穿城而过，千年历史积淀形成了独特的人文景观，是山东文化旅游的重要目的地。',
+    color: const Color(0xFFE65100),
+    secondaryColor: const Color(0xFFFF9800),
+    icon: Icons.account_balance,
+    heroEmoji: '🏛️',
+    imageUrl:
+    'https://p5-flow-imagex-sign.byteimg.com/labis/image/b3c59df97e8e23a517010c6734097aba~tplv-a9rns2rl98-pc_smart_face_crop-v1:512:384.image?lk3s=8e244e95&rcl=20260608154407D40E9E53A16A1B8A4D56&rrcfp=cee388b0&x-expires=2096264654&x-signature=%2Bu62%2F1wyG6%2BNa%2BAWvh9pbDESit8%3D',
+    tags: ['江北水城', '运河文化', '古城风貌', '历史探索', '人文体验'],
+    attractions: const [
+      Attraction(
+        name: '光岳楼',
+        description:
+        '中国现存最高大、最古老的木构楼阁之一，建于明洪武年间，是聊城的城市标志，登楼可俯瞰整个古城水城格局。',
+        rating: 5,
+        suitableFor: ['古建筑爱好者', '历史文化', '拍照', '登高望远'],
+        imageUrl:
+        'https://p5-flow-imagex-sign.byteimg.com/isp-i18n-media/image/24f605bc84e94f0b923b5b4b11b55b62~tplv-a9rns2rl98-pc_smart_face_crop-v1:512:384.image?lk3s=8e244e95&rcl=20260608154407D40E9E53A16A1B8A4D56&rrcfp=cee388b0&x-expires=2096264656&x-signature=bg%2FRbo2ubC%2FVSpXmj4dFOyWMZAo%3D',
+        emoji: '🗼',
+      ),
+      Attraction(
+        name: '东昌湖',
+        description:
+        '中国江北最大的城市内湖，古运河与护城河共同形成了独特的水城景观，湖光倒影、古城相映，夜景尤为迷人。',
+        rating: 5,
+        suitableFor: ['夜景摄影', '城市漫步', '休闲', '情侣'],
+        imageUrl:
+        'https://p5-flow-imagex-sign.byteimg.com/labis/image/d7d4fc9718f4cf30e330b037e9420f1d~tplv-a9rns2rl98-pc_smart_face_crop-v1:512:384.image?lk3s=8e244e95&rcl=20260608154407D40E9E53A16A1B8A4D56&rrcfp=cee388b0&x-expires=2096264658&x-signature=caUI9BMieiATtJpeiZ5ottZIFv4%3D',
+        emoji: '🌙',
+      ),
+      Attraction(
+        name: '山陕会馆',
+        description: '清代山西、陕西商人在聊城建造的商业会馆，建筑雕刻精美绝伦，体现了明清商贸文化与建筑艺术的完美结合。',
+        rating: 4,
+        suitableFor: ['历史研究', '建筑艺术', '文化探索', '摄影'],
+        imageUrl:
+        'https://p5-flow-imagex-sign.byteimg.com/isp-i18n-media/image/cbfbe71ac12c69df35a28b858a1d83a0~tplv-a9rns2rl98-pc_smart_face_crop-v1:512:384.image?lk3s=8e244e95&rcl=20260608154407D40E9E53A16A1B8A4D56&rrcfp=cee388b0&x-expires=2096264659&x-signature=vfADkAQeYUib%2Be6LiVCT55zSPSM%3D',
+        emoji: '🏮',
+      ),
+    ],
+    foods: const [
+      Food(
+        name: '魏氏熏鸡',
+        area: '东昌府区·古城美食街',
+        rating: 4,
+        price: 38,
+        description: '聊城百年传统名吃，以独特熏制工艺制作，表皮金黄酥脆，肉质鲜嫩入味，是馈赠亲友的特色伴手礼。',
+        emoji: '🍗',
+        imageUrl:
+        'https://p5-flow-imagex-sign.byteimg.com/tos-cn-i-6w9my0ksvp/93ada655e39d442e8badea0c49f7d7b2~tplv-a9rns2rl98-pc_smart_face_crop-v1:512:384.image?lk3s=8e244e95&rcl=20260608154407D40E9E53A16A1B8A4D56&rrcfp=cee388b0&x-expires=2096264663&x-signature=HNCIFFuik3Px398vGxYwTX%2FjFnI%3D',
+      ),
+      Food(
+        name: '呱嗒',
+        area: '古城区·早市',
+        rating: 4,
+        price: 15,
+        description: '聊城独创的传统早点，形如月牙，外皮酥脆，内馅丰富，有肉馅、鸡蛋等多种口味，是体验聊城人间烟火的最佳方式。',
+        emoji: '🥙',
+        imageUrl:
+        'https://p5-flow-imagex-sign.byteimg.com/labis/dc3bcb765b90ec898a2aa2944ff4f287~tplv-a9rns2rl98-pc_smart_face_crop-v1:512:384.image?lk3s=8e244e95&rcl=20260608154407D40E9E53A16A1B8A4D56&rrcfp=cee388b0&x-expires=2096264662&x-signature=zObxXytaoNXZJIM8VNK6cCMVbaQ%3D',
+      ),
+      Food(
+        name: '高唐驴肉火烧',
+        area: '高唐县·老字号',
+        rating: 5,
+        price: 22,
+        description: '选用上等驴肉，慢火烹制，肉质鲜嫩多汁，配以酥脆火烧，是聊城最具地方特色的传统美食之一。',
+        emoji: '🫓',
+        imageUrl:
+        'https://p5-flow-imagex-sign.byteimg.com/labis/image/4bbb03cea97eab805e0d09dc30145d38~tplv-a9rns2rl98-pc_smart_face_crop-v1:512:384.image?lk3s=8e244e95&rcl=20260608154407D40E9E53A16A1B8A4D56&rrcfp=cee388b0&x-expires=2096264665&x-signature=%2FnWgATQaV2ESnD3CQ0OZkUYlSTI%3D',
+      ),
+    ],
+    routes: const [
+      RoutePlan(
+        title: '聊城古城文化一日游',
+        items: [
+          RouteItem(time: '08:00', place: '早市·呱嗒早餐体验', icon: '🌅'),
+          RouteItem(time: '09:30', place: '光岳楼·登高览古城', icon: '🗼'),
+          RouteItem(time: '11:30', place: '古城特色午餐', icon: '🍽️'),
+          RouteItem(time: '13:30', place: '山陕会馆·建筑艺术', icon: '🏮'),
+          RouteItem(time: '15:30', place: '东昌湖·水上游览', icon: '⛵'),
+          RouteItem(time: '18:30', place: '古城夜市·魏氏熏鸡', icon: '🌙'),
+          RouteItem(time: '20:00', place: '运河夜游·古城灯光秀', icon: '✨'),
+        ],
+      ),
+    ],
+  ),
+];
+
+class TravelAppState {
+  static final Set<String> checkedAttractions = {};
+  static final Set<String> exploredCities = {};
+  static final Set<String> favoriteFoods = {};
+  static int totalPoints = 0;
+}
+
+// ==================== 通用组件 ====================
+
+/// 统一的网络图片组件（带占位、错误处理）
+class SmartImage extends StatelessWidget {
+  final String url;
+  final double? width;
+  final double? height;
+  final BoxFit fit;
+  final Color fallbackColor;
+  final String fallbackEmoji;
+  final BorderRadius? borderRadius;
+
+  const SmartImage({
+    super.key,
+    required this.url,
+    this.width,
+    this.height,
+    this.fit = BoxFit.cover,
+    this.fallbackColor = Colors.grey,
+    this.fallbackEmoji = '🖼️',
+    this.borderRadius,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    Widget img = Image.network(
+      url,
+      width: width,
+      height: height,
+      fit: fit,
+      errorBuilder: (_, __, ___) => Container(
+        width: width,
+        height: height,
+        color: fallbackColor.withOpacity(0.12),
+        child: Center(
+          child: Text(fallbackEmoji, style: const TextStyle(fontSize: 40)),
+        ),
+      ),
+      loadingBuilder: (_, child, loadingProgress) {
+        if (loadingProgress == null) return child;
+        return Container(
+          width: width,
+          height: height,
+          color: fallbackColor.withOpacity(0.06),
+          child: Center(
+            child: SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(
+                color: fallbackColor,
+                strokeWidth: 2,
+                value: loadingProgress.expectedTotalBytes != null
+                    ? loadingProgress.cumulativeBytesLoaded /
+                    loadingProgress.expectedTotalBytes!
+                    : null,
+              ),
+            ),
+          ),
+        );
+      },
+    );
+
+    if (borderRadius != null) {
+      img = ClipRRect(borderRadius: borderRadius!, child: img);
+    }
+    return img;
+  }
+}
+
+/// 星级评分
+class StarRating extends StatelessWidget {
+  final int rating;
+  final double size;
+
+  const StarRating({super.key, required this.rating, this.size = 16});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(
+        5,
+            (i) => Icon(
+          Icons.star_rounded,
+          size: size,
+          color: i < rating ? Colors.amber : Colors.grey.shade200,
+        ),
+      ),
+    );
+  }
+}
+
+/// 标签芯片
+class TagChip extends StatelessWidget {
+  final String label;
+  final Color color;
+  final bool filled;
+
+  const TagChip({
+    super.key,
+    required this.label,
+    required this.color,
+    this.filled = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: filled ? color : color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(AppTheme.radiusS),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          color: filled ? Colors.white : color,
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+}
+
+// ==================== 启动页 ====================
+
+class SplashPage extends StatefulWidget {
+  const SplashPage({super.key});
+
+  @override
+  State<SplashPage> createState() => _SplashPageState();
+}
+
+class _SplashPageState extends State<SplashPage>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _fadeAnim;
+  late Animation<double> _scaleAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1800),
+    );
+    _fadeAnim = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _controller, curve: const Interval(0, 0.6)),
+    );
+    _scaleAnim = Tween<double>(begin: 0.7, end: 1).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.elasticOut),
+    );
+    _controller.forward();
+
+    Future.delayed(const Duration(seconds: 3), () {
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          PageRouteBuilder(
+            pageBuilder: (_, __, ___) => const HomePage(),
+            transitionsBuilder: (_, anim, __, child) =>
+                FadeTransition(opacity: anim, child: child),
+            transitionDuration: const Duration(milliseconds: 600),
+          ),
+        );
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF0A3D2E), Color(0xFF1B6B47), Color(0xFF0E4D6E)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Center(
+          child: AnimatedBuilder(
+            animation: _controller,
+            builder: (_, __) => FadeTransition(
+              opacity: _fadeAnim,
+              child: ScaleTransition(
+                scale: _scaleAnim,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 120,
+                      height: 120,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withOpacity(0.15),
+                        border: Border.all(color: Colors.white30, width: 2),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            blurRadius: 30,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
+                      ),
+                      child: const Center(
+                        child: Text('🗺️', style: TextStyle(fontSize: 60)),
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    const Text(
+                      'Explore Shandong',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 34,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 2,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      '发现山东之美，探索家乡故事',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.75),
+                        fontSize: 16,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                    const SizedBox(height: 60),
+                    SizedBox(
+                      width: 160,
+                      child: LinearProgressIndicator(
+                        backgroundColor: Colors.white24,
+                        valueColor:
+                        const AlwaysStoppedAnimation<Color>(Colors.white),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ==================== 主页 ====================
+
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
+  int currentBanner = 0;
+  int _currentNavIndex = 0;
+  late PageController _pageController;
+
+  final List<Map<String, dynamic>> banners = [
+    {
+      'title': '探索山东家乡之美',
+      'subtitle': '从湿地生态到仙境海岸，再到江北水城',
+      'colors': [Color(0xFF0A3D2E), Color(0xFF1B6B47)],
+      'emoji': '🌿',
+    },
+    {
+      'title': '仙境海岸等你来',
+      'subtitle': '蓬莱阁、养马岛、葡萄酒文化等你探索',
+      'colors': [Color(0xFF0D2B5E), Color(0xFF1565C0)],
+      'emoji': '🌊',
+    },
+    {
+      'title': 'AI助你规划完美旅程',
+      'subtitle': '回答三个问题，找到最适合你的山东城市',
+      'colors': [Color(0xFF4A0072), Color(0xFF7B1FA2)],
+      'emoji': '🤖',
+    },
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F6FA),
+      body: IndexedStack(
+        index: _currentNavIndex,
+        children: [
+          _buildHomeTab(),
+          const ExploreTab(),
+          const ProfileTab(),
+        ],
+      ),
+      bottomNavigationBar: _buildBottomNav(),
+    );
+  }
+
+  Widget _buildBottomNav() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 20,
+            offset: const Offset(0, -4),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _navItem(0, Icons.home_rounded, Icons.home_outlined, '首页'),
+              _navItem(1, Icons.explore_rounded, Icons.explore_outlined, '探索'),
+              _navItem(2, Icons.person_rounded, Icons.person_outlined, '我的'),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _navItem(int index, IconData activeIcon, IconData icon, String label) {
+    final isActive = _currentNavIndex == index;
+    return GestureDetector(
+      onTap: () => setState(() => _currentNavIndex = index),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        decoration: BoxDecoration(
+          color: isActive
+              ? const Color(0xFF0A6E6E).withOpacity(0.1)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              isActive ? activeIcon : icon,
+              color: isActive ? const Color(0xFF0A6E6E) : Colors.grey,
+              size: 26,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                color: isActive ? const Color(0xFF0A6E6E) : Colors.grey,
+                fontSize: 12,
+                fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHomeTab() {
+    return CustomScrollView(
+      slivers: [
+        SliverAppBar(
+          expandedHeight: 0,
+          floating: true,
+          snap: true,
+          backgroundColor: Colors.white,
+          elevation: 0,
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0A6E6E).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Text('🗺️', style: TextStyle(fontSize: 20)),
+              ),
+              const SizedBox(width: 10),
+              const Text(
+                'Explore Shandong',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                  color: Colors.black87,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.notifications_outlined,
+                  color: Colors.black54),
+              onPressed: () => _showNotificationDialog(context),
+            ),
+            const SizedBox(width: 8),
+          ],
+        ),
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.all(AppTheme.spaceM),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildBannerSection(),
+                const SizedBox(height: AppTheme.spaceL),
+                _buildStatsRow(),
+                const SizedBox(height: AppTheme.spaceL),
+                _buildQuickActions(context),
+                const SizedBox(height: AppTheme.spaceL),
+                _buildSectionHeader('推荐城市', '查看全部', () {}),
+                const SizedBox(height: 14),
+                ...cities.map(
+                      (city) => Padding(
+                    padding: const EdgeInsets.only(bottom: 18),
+                    child: _buildPremiumCityCard(context, city),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                _buildAIEntry(context),
+                const SizedBox(height: 100),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _showNotificationDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppTheme.radiusL)),
+        title: const Text('消息中心'),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: Text('🎉', style: TextStyle(fontSize: 24)),
+              title: Text('欢迎来到山东旅行'),
+              subtitle: Text('开始你的山东探索之旅吧！'),
+            ),
+            ListTile(
+              leading: Text('🏆', style: TextStyle(fontSize: 24)),
+              title: Text('打卡有奖励'),
+              subtitle: Text('每打卡一处景点获得10积分'),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('知道了'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBannerSection() {
+    return Column(
+      children: [
+        SizedBox(
+          height: 210,
+          child: PageView.builder(
+            controller: _pageController,
+            onPageChanged: (i) => setState(() => currentBanner = i),
+            itemCount: banners.length,
+            itemBuilder: (_, index) {
+              final item = banners[index];
+              final colors = item['colors'] as List<Color>;
+              return Container(
+                margin: const EdgeInsets.symmetric(horizontal: 2),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+                  gradient: LinearGradient(
+                    colors: colors,
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  boxShadow: AppTheme.cardShadow(colors[0], opacity: 0.4),
+                ),
+                child: Stack(
+                  children: [
+                    Positioned(
+                      right: -20,
+                      bottom: -20,
+                      child: Text(
+                        item['emoji'] as String,
+                        style: const TextStyle(fontSize: 130),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: const Text(
+                              'Explore Shandong',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                letterSpacing: 1,
+                              ),
+                            ),
+                          ),
+                          const Spacer(),
+                          Text(
+                            item['title'] as String,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 26,
+                              fontWeight: FontWeight.bold,
+                              height: 1.2,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            item['subtitle'] as String,
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.85),
+                              fontSize: 13,
+                              height: 1.4,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 14),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(
+            banners.length,
+                (index) => GestureDetector(
+              onTap: () {
+                _pageController.animateToPage(
+                  index,
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                );
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                width: currentBanner == index ? 28 : 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: currentBanner == index
+                      ? const Color(0xFF0A6E6E)
+                      : Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatsRow() {
+    return Row(
+      children: [
+        Expanded(
+          child: _statsCard(
+            '${TravelAppState.exploredCities.length}',
+            '已探索城市',
+            Icons.location_city_rounded,
+            const Color(0xFF0A6E6E),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _statsCard(
+            '${TravelAppState.checkedAttractions.length}',
+            '景点打卡',
+            Icons.place_rounded,
+            const Color(0xFF1565C0),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _statsCard(
+            '${TravelAppState.totalPoints}',
+            '旅行积分',
+            Icons.stars_rounded,
+            const Color(0xFFE65100),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _statsCard(String value, String label, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(AppTheme.radiusL),
+        boxShadow: AppTheme.cardShadow(color),
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.12),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: color, size: 20),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 11, color: Colors.black45),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickActions(BuildContext context) {
+    final actions = [
+      {'emoji': '🗺️', 'label': '地图探索', 'color': const Color(0xFF0A6E6E)},
+      {'emoji': '🍜', 'label': '美食地图', 'color': const Color(0xFFE65100)},
+      {'emoji': '🤖', 'label': 'AI推荐', 'color': const Color(0xFF7B1FA2)},
+      {'emoji': '📸', 'label': '打卡记录', 'color': const Color(0xFF1565C0)},
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader('快速入口', '', null),
+        const SizedBox(height: 14),
+        Row(
+          children: actions.asMap().entries.map((entry) {
+            final action = entry.value;
+            return Expanded(
+              child: Padding(
+                padding: EdgeInsets.only(
+                  right: entry.key < actions.length - 1 ? 10 : 0,
+                ),
+                child: GestureDetector(
+                  onTap: () {
+                    if (entry.key == 2) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const AIQuizPage()),
+                      ).then((_) => setState(() {}));
+                    } else if (entry.key == 0) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const MapPage()),
+                      );
+                    } else if (entry.key == 3) {
+                      _showCheckinDialog(context);
+                    } else {
+                      _showFoodMapDialog(context);
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(AppTheme.radiusM),
+                      boxShadow:
+                      AppTheme.cardShadow(action['color'] as Color),
+                    ),
+                    child: Column(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: (action['color'] as Color).withOpacity(0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Text(
+                            action['emoji'] as String,
+                            style: const TextStyle(fontSize: 24),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          action['label'] as String,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  void _showCheckinDialog(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (_) => Container(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              '打卡记录',
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            if (TravelAppState.checkedAttractions.isEmpty)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(30),
+                  child: Column(
+                    children: [
+                      Text('📍', style: TextStyle(fontSize: 48)),
+                      SizedBox(height: 12),
+                      Text('还没有打卡记录\n快去探索城市吧！',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.black45)),
+                    ],
+                  ),
+                ),
+              )
+            else
+              ...TravelAppState.checkedAttractions.map(
+                    (k) => ListTile(
+                  leading:
+                  const Icon(Icons.check_circle, color: Color(0xFF0A6E6E)),
+                  title: Text(k.replaceAll('-', ' · ')),
+                ),
+              ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showFoodMapDialog(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (_) => DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: 0.6,
+        builder: (_, controller) => Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                '🍜 美食地图',
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              Expanded(
+                child: ListView(
+                  controller: controller,
+                  children: cities
+                      .expand((city) => city.foods.map((food) => Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: city.color.withOpacity(0.06),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                          color: city.color.withOpacity(0.15)),
+                    ),
+                    child: Row(
+                      children: [
+                        Text(food.emoji,
+                            style: const TextStyle(fontSize: 32)),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment:
+                            CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                food.name,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16),
+                              ),
+                              Text(food.area,
+                                  style: const TextStyle(
+                                      color: Colors.black45,
+                                      fontSize: 13)),
+                            ],
+                          ),
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              '${food.price}元/人',
+                              style: TextStyle(
+                                color: city.color,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              city.name,
+                              style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.black45),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  )))
+                      .toList(),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(String title, String action, VoidCallback? onTap) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Row(
+          children: [
+            Container(
+              width: 4,
+              height: 20,
+              decoration: BoxDecoration(
+                color: const Color(0xFF0A6E6E),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Text(
+              title,
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+        if (action.isNotEmpty)
+          GestureDetector(
+            onTap: onTap,
+            child: Row(
+              children: [
+                Text(
+                  action,
+                  style: const TextStyle(
+                    color: Color(0xFF0A6E6E),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const Icon(Icons.chevron_right,
+                    color: Color(0xFF0A6E6E), size: 18),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildPremiumCityCard(BuildContext context, CityData city) {
+    return GestureDetector(
+      onTap: () async {
+        TravelAppState.exploredCities.add(city.name);
+        await Navigator.push(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (_, __, ___) => CityDetailPage(city: city),
+            transitionsBuilder: (_, anim, __, child) => FadeTransition(
+              opacity: anim,
+              child: SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(0, 0.05),
+                  end: Offset.zero,
+                ).animate(CurvedAnimation(parent: anim, curve: Curves.easeOut)),
+                child: child,
+              ),
+            ),
+          ),
+        );
+        setState(() {});
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+          boxShadow: AppTheme.cardShadow(city.color, opacity: 0.25),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+          child: Stack(
+            children: [
+              SmartImage(
+                url: city.imageUrl,
+                height: 220,
+                width: double.infinity,
+                fallbackColor: city.color,
+                fallbackEmoji: city.heroEmoji,
+              ),
+              Positioned.fill(
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.transparent,
+                        city.color.withOpacity(0.88),
+                      ],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      stops: const [0.3, 1.0],
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.25),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                city.titleTag,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              city.name,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 30,
+                                fontWeight: FontWeight.bold,
+                                height: 1.1,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              city.subtitle,
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.9),
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Column(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.25),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Text(
+                              city.heroEmoji,
+                              style: const TextStyle(fontSize: 28),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              '探索 →',
+                              style: TextStyle(
+                                color: city.color,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              if (TravelAppState.exploredCities.contains(city.name))
+                Positioned(
+                  top: 14,
+                  right: 14,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.check_circle, color: city.color, size: 14),
+                        const SizedBox(width: 4),
+                        Text(
+                          '已探索',
+                          style: TextStyle(
+                            color: city.color,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAIEntry(BuildContext context) {
+    return GestureDetector(
+      onTap: () async {
+        await Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const AIQuizPage()),
+        );
+        setState(() {});
+      },
+      child: Container(
+        padding: const EdgeInsets.all(22),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF4A0072), Color(0xFF7B1FA2)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+          boxShadow: AppTheme.cardShadow(const Color(0xFF7B1FA2), opacity: 0.3),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(AppTheme.radiusM),
+              ),
+              child: const Text('🤖', style: TextStyle(fontSize: 30)),
+            ),
+            const SizedBox(width: 16),
+            const Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'AI旅行顾问',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 6),
+                  Text(
+                    '3个问题 · 找到专属山东旅行目的地',
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 13,
+                      height: 1.4,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Text(
+                '开始',
+                style: TextStyle(
+                  color: Color(0xFF7B1FA2),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ==================== 探索标签页 ====================
+
+class ExploreTab extends StatefulWidget {
+  const ExploreTab({super.key});
+
+  @override
+  State<ExploreTab> createState() => _ExploreTabState();
+}
+
+class _ExploreTabState extends State<ExploreTab> {
+  String selectedCategory = '全部';
+  final categories = ['全部', '生态', '海滨', '文化', '美食', '历史'];
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomScrollView(
+      slivers: [
+        SliverAppBar(
+          title: const Text('探索山东',
+              style: TextStyle(fontWeight: FontWeight.bold)),
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black87,
+          floating: true,
+          elevation: 0,
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(60),
+            child: Container(
+              color: Colors.white,
+              padding: const EdgeInsets.only(bottom: 12),
+              child: SizedBox(
+                height: 44,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: categories.length,
+                  itemBuilder: (_, i) {
+                    final cat = categories[i];
+                    final isSelected = cat == selectedCategory;
+                    return GestureDetector(
+                      onTap: () => setState(() => selectedCategory = cat),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        margin: const EdgeInsets.only(right: 10),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? const Color(0xFF0A6E6E)
+                              : Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          cat,
+                          style: TextStyle(
+                            color: isSelected ? Colors.white : Colors.black54,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+        ),
+        SliverPadding(
+          padding: const EdgeInsets.all(16),
+          sliver: SliverList(
+            delegate: SliverChildBuilderDelegate(
+                  (_, index) {
+                if (index < cities.length) {
+                  final city = cities[index];
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: _buildExploreCard(context, city),
+                  );
+                }
+                return null;
+              },
+              childCount: cities.length,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildExploreCard(BuildContext context, CityData city) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(AppTheme.radiusL),
+        boxShadow: AppTheme.softShadow,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SmartImage(
+            url: city.imageUrl,
+            height: 170,
+            width: double.infinity,
+            fallbackColor: city.color,
+            fallbackEmoji: city.heroEmoji,
+            borderRadius:
+            const BorderRadius.vertical(top: Radius.circular(AppTheme.radiusL)),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      city.name,
+                      style: const TextStyle(
+                          fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                    const Spacer(),
+                    TagChip(label: city.titleTag, color: city.color),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  city.description,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(color: Colors.black54, height: 1.5),
+                ),
+                const SizedBox(height: 14),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Wrap(
+                        spacing: 6,
+                        children: city.tags
+                            .take(3)
+                            .map((tag) => Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: city.color.withOpacity(0.08),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            tag,
+                            style: TextStyle(
+                                color: city.color, fontSize: 11),
+                          ),
+                        ))
+                            .toList(),
+                      ),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        TravelAppState.exploredCities.add(city.name);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => CityDetailPage(city: city)),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: city.color,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 18, vertical: 10),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: const Text('进入'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ==================== 我的标签页 ====================
+
+class ProfileTab extends StatelessWidget {
+  const ProfileTab({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final exploredCount = TravelAppState.exploredCities.length;
+    final checkinCount = TravelAppState.checkedAttractions.length;
+
+    return CustomScrollView(
+      slivers: [
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                const SizedBox(height: 20),
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF0A3D2E), Color(0xFF1B6B47)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+                    boxShadow: AppTheme.cardShadow(const Color(0xFF0A3D2E),
+                        opacity: 0.25),
+                  ),
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 84,
+                        height: 84,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white30, width: 2),
+                        ),
+                        child: const Center(
+                          child: Text('🧭', style: TextStyle(fontSize: 38)),
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      const Text(
+                        '山东探索者',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        '继续探索，发现更多山东之美',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.75),
+                          fontSize: 14,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          _profileStat(
+                              '$exploredCount', '探索城市', Colors.white),
+                          _divider(),
+                          _profileStat('$checkinCount', '景点打卡', Colors.white),
+                          _divider(),
+                          _profileStat('${TravelAppState.totalPoints}', '旅行积分',
+                              Colors.white),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+                _buildProgressSection(),
+                const SizedBox(height: 24),
+                _buildAchievements(exploredCount, checkinCount),
+                const SizedBox(height: 100),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _profileStat(String value, String label, Color color) {
+    return Column(
+      children: [
+        Text(value,
+            style: TextStyle(
+                color: color, fontSize: 26, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 4),
+        Text(label,
+            style: TextStyle(color: color.withOpacity(0.75), fontSize: 12)),
+      ],
+    );
+  }
+
+  Widget _divider() {
+    return Container(width: 1, height: 36, color: Colors.white24);
+  }
+
+  Widget _buildProgressSection() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(AppTheme.radiusL),
+        boxShadow: AppTheme.softShadow,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            '探索进度',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 16),
+          ...cities.map(
+                (city) => Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(city.heroEmoji,
+                          style: const TextStyle(fontSize: 18)),
+                      const SizedBox(width: 8),
+                      Text(city.name,
+                          style:
+                          const TextStyle(fontWeight: FontWeight.w600)),
+                      const Spacer(),
+                      Text(
+                        TravelAppState.exploredCities.contains(city.name)
+                            ? '已探索'
+                            : '未探索',
+                        style: TextStyle(
+                          color:
+                          TravelAppState.exploredCities.contains(city.name)
+                              ? city.color
+                              : Colors.black38,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: LinearProgressIndicator(
+                      value: TravelAppState.exploredCities.contains(city.name)
+                          ? 1.0
+                          : 0.0,
+                      backgroundColor: Colors.grey.shade100,
+                      valueColor: AlwaysStoppedAnimation<Color>(city.color),
+                      minHeight: 8,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAchievements(int exploredCount, int checkinCount) {
+    final achievements = [
+      {
+        'emoji': '🌱',
+        'title': '初探山东',
+        'desc': '探索第一个城市',
+        'unlocked': exploredCount >= 1,
+      },
+      {
+        'emoji': '🗺️',
+        'title': '全境探索者',
+        'desc': '探索所有城市',
+        'unlocked': exploredCount >= cities.length,
+      },
+      {
+        'emoji': '📍',
+        'title': '打卡达人',
+        'desc': '完成3处景点打卡',
+        'unlocked': checkinCount >= 3,
+      },
+      {
+        'emoji': '🏆',
+        'title': '山东通',
+        'desc': '完成所有景点打卡',
+        'unlocked': checkinCount >=
+            cities.fold(0, (sum, c) => sum + c.attractions.length),
+      },
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          '旅行成就',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 14),
+        GridView.count(
+          crossAxisCount: 2,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
+          childAspectRatio: 1.5,
+          children: achievements.map((ach) {
+            final unlocked = ach['unlocked'] as bool;
+            return Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: unlocked
+                    ? const Color(0xFF0A6E6E).withOpacity(0.08)
+                    : Colors.grey.shade50,
+                borderRadius: BorderRadius.circular(AppTheme.radiusL),
+                border: Border.all(
+                  color: unlocked
+                      ? const Color(0xFF0A6E6E).withOpacity(0.3)
+                      : Colors.grey.shade200,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    unlocked ? ach['emoji'] as String : '🔒',
+                    style: const TextStyle(fontSize: 26),
+                  ),
+                  const Spacer(),
+                  Text(
+                    ach['title'] as String,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: unlocked ? Colors.black87 : Colors.black38,
+                    ),
+                  ),
+                  Text(
+                    ach['desc'] as String,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: unlocked ? Colors.black54 : Colors.black26,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+}
+
+// ==================== 地图页 ====================
+
+class MapPage extends StatefulWidget {
+  const MapPage({super.key});
+
+  @override
+  State<MapPage> createState() => _MapPageState();
+}
+
+class _MapPageState extends State<MapPage> with SingleTickerProviderStateMixin {
+  late AnimationController _pulseController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F6FA),
+      appBar: AppBar(
+        title: const Text('山东地图',
+            style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black87,
+        elevation: 0,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            Container(
+              height: 420,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+                boxShadow: AppTheme.softShadow,
+              ),
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: ClipRRect(
+                      borderRadius:
+                      BorderRadius.circular(AppTheme.radiusXL),
+                      child: CustomPaint(painter: MapBackgroundPainter()),
+                    ),
+                  ),
+                  const Positioned(
+                    left: 20,
+                    top: 18,
+                    child: Text(
+                      '🗺️ 山东城市导览',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                      left: 80, top: 130, child: _buildMapMarker(context, cities[0])),
+                  Positioned(
+                      right: 70, top: 100, child: _buildMapMarker(context, cities[1])),
+                  Positioned(
+                      left: 150, bottom: 80, child: _buildMapMarker(context, cities[2])),
+                  Positioned(
+                    bottom: 16,
+                    right: 16,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.9),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Text(
+                        '点击城市标记进入详情',
+                        style: TextStyle(fontSize: 11, color: Colors.black45),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            Expanded(
+              child: ListView.builder(
+                itemCount: cities.length,
+                itemBuilder: (_, index) {
+                  final city = cities[index];
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(AppTheme.radiusL),
+                      boxShadow: AppTheme.softShadow,
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: city.color.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Text(city.heroEmoji,
+                              style: const TextStyle(fontSize: 24)),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                city.name,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 16),
+                              ),
+                              Text(
+                                city.subtitle,
+                                style: const TextStyle(
+                                    color: Colors.black45, fontSize: 13),
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (TravelAppState.exploredCities.contains(city.name))
+                          Icon(Icons.check_circle, color: city.color, size: 22)
+                        else
+                          Icon(Icons.arrow_forward_ios,
+                              color: Colors.grey.shade300, size: 16),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMapMarker(BuildContext context, CityData city) {
+    final isExplored = TravelAppState.exploredCities.contains(city.name);
+    return GestureDetector(
+      onTap: () async {
+        TravelAppState.exploredCities.add(city.name);
+        await Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => CityDetailPage(city: city)),
+        );
+        setState(() {});
+      },
+      child: AnimatedBuilder(
+        animation: _pulseController,
+        builder: (_, __) {
+          final pulse = _pulseController.value;
+          return Column(
+            children: [
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  if (!isExplored)
+                    Container(
+                      width: 44 + pulse * 12,
+                      height: 44 + pulse * 12,
+                      decoration: BoxDecoration(
+                        color: city.color.withOpacity(0.15 * (1 - pulse)),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: city.color,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 3),
+                      boxShadow: [
+                        BoxShadow(
+                          color: city.color.withOpacity(0.4),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: isExplored
+                          ? const Icon(Icons.check,
+                          color: Colors.white, size: 20)
+                          : Text(city.heroEmoji,
+                          style: const TextStyle(fontSize: 18)),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Container(
+                padding:
+                const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: city.color,
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                      color: city.color.withOpacity(0.3),
+                      blurRadius: 6,
+                    ),
+                  ],
+                ),
+                child: Text(
+                  city.name,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class MapBackgroundPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = const Color(0xFFE8F5E9)
+      ..style = PaintingStyle.fill;
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), paint);
+
+    final borderPaint = Paint()
+      ..color = const Color(0xFFB2DFDB)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.5;
+
+    final path = Path();
+    path.moveTo(size.width * 0.15, size.height * 0.3);
+    path.quadraticBezierTo(size.width * 0.4, size.height * 0.1,
+        size.width * 0.75, size.height * 0.2);
+    path.quadraticBezierTo(size.width * 0.9, size.height * 0.35,
+        size.width * 0.85, size.height * 0.6);
+    path.quadraticBezierTo(size.width * 0.7, size.height * 0.85,
+        size.width * 0.4, size.height * 0.8);
+    path.quadraticBezierTo(size.width * 0.2, size.height * 0.75,
+        size.width * 0.1, size.height * 0.55);
+    path.close();
+
+    final fillPaint = Paint()
+      ..color = const Color(0xFFE0F2F1)
+      ..style = PaintingStyle.fill;
+    canvas.drawPath(path, fillPaint);
+    canvas.drawPath(path, borderPaint);
+
+    final seaPaint = Paint()
+      ..color = const Color(0xFFB3E5FC).withOpacity(0.5)
+      ..style = PaintingStyle.fill;
+    final seaPath = Path();
+    seaPath.moveTo(size.width * 0.75, size.height * 0.2);
+    seaPath.quadraticBezierTo(
+        size.width * 0.95, size.height * 0.1, size.width, size.height * 0.3);
+    seaPath.lineTo(size.width, size.height);
+    seaPath.lineTo(size.width * 0.5, size.height);
+    seaPath.quadraticBezierTo(size.width * 0.85, size.height * 0.6,
+        size.width * 0.85, size.height * 0.6);
+    seaPath.quadraticBezierTo(size.width * 0.9, size.height * 0.35,
+        size.width * 0.75, size.height * 0.2);
+    canvas.drawPath(seaPath, seaPaint);
+
+    final gridPaint = Paint()
+      ..color = Colors.grey.withOpacity(0.08)
+      ..strokeWidth = 0.8;
+
+    for (double x = 0; x < size.width; x += 40) {
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), gridPaint);
+    }
+    for (double y = 0; y < size.height; y += 40) {
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), gridPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+// ==================== 城市详情页 ====================
+
+class CityDetailPage extends StatefulWidget {
+  final CityData city;
+
+  const CityDetailPage({super.key, required this.city});
+
+  @override
+  State<CityDetailPage> createState() => _CityDetailPageState();
+}
+
+class _CityDetailPageState extends State<CityDetailPage>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final city = widget.city;
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F6FA),
+      body: NestedScrollView(
+        headerSliverBuilder: (_, innerBoxIsScrolled) => [
+          SliverAppBar(
+            expandedHeight: 300,
+            pinned: true,
+            backgroundColor: city.color,
+            foregroundColor: Colors.white,
+            flexibleSpace: FlexibleSpaceBar(
+              background: Stack(
+                fit: StackFit.expand,
+                children: [
+                  SmartImage(
+                    url: city.imageUrl,
+                    fallbackColor: city.color,
+                    fallbackEmoji: city.heroEmoji,
+                  ),
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.transparent,
+                          city.color.withOpacity(0.85),
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        stops: const [0.4, 1.0],
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 24,
+                    left: 20,
+                    right: 20,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.25),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            city.titleTag,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          city.name,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 36,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          city.subtitle,
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.9),
+                            fontSize: 15,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            bottom: TabBar(
+              controller: _tabController,
+              indicatorColor: Colors.white,
+              indicatorWeight: 3,
+              labelColor: Colors.white,
+              unselectedLabelColor: Colors.white60,
+              labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+              tabs: const [
+                Tab(text: '景点'),
+                Tab(text: '美食'),
+                Tab(text: '路线'),
+              ],
+            ),
+          ),
+        ],
+        body: TabBarView(
+          controller: _tabController,
+          children: [
+            _buildAttractionsTab(city),
+            _buildFoodsTab(city),
+            _buildRoutesTab(city),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAttractionsTab(CityData city) {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(AppTheme.radiusL),
+            boxShadow: AppTheme.softShadow,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 4,
+                    height: 18,
+                    decoration: BoxDecoration(
+                      color: city.color,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  const Text('城市简介',
+                      style: TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.bold)),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                city.description,
+                style: const TextStyle(
+                    height: 1.6, color: Colors.black87, fontSize: 15),
+              ),
+              const SizedBox(height: 14),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: city.tags
+                    .map((tag) => TagChip(label: tag, color: city.color))
+                    .toList(),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+        Row(
+          children: [
+            Container(
+              width: 4,
+              height: 20,
+              decoration: BoxDecoration(
+                color: city.color,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(width: 10),
+            const Text('🏞️ 景点推荐',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        const SizedBox(height: 14),
+        ...city.attractions.map(
+              (attraction) => Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: _buildPremiumAttractionCard(city, attraction),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPremiumAttractionCard(CityData city, Attraction attraction) {
+    final key = '${city.name}-${attraction.name}';
+    final checked = TravelAppState.checkedAttractions.contains(key);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(AppTheme.radiusL),
+        boxShadow: AppTheme.softShadow,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Stack(
+            children: [
+              SmartImage(
+                url: attraction.imageUrl,
+                height: 180,
+                width: double.infinity,
+                fallbackColor: city.color,
+                fallbackEmoji: attraction.emoji,
+                borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(AppTheme.radiusL)),
+              ),
+              Positioned(
+                top: 12,
+                left: 12,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(attraction.emoji,
+                          style: const TextStyle(fontSize: 14)),
+                      const SizedBox(width: 4),
+                      StarRating(rating: attraction.rating, size: 12),
+                    ],
+                  ),
+                ),
+              ),
+              if (checked)
+                Positioned(
+                  top: 12,
+                  right: 12,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: city.color,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.check_circle,
+                            color: Colors.white, size: 14),
+                        SizedBox(width: 4),
+                        Text('已打卡',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  attraction.name,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  attraction.description,
+                  style: const TextStyle(
+                      height: 1.5, color: Colors.black54, fontSize: 14),
+                ),
+                const SizedBox(height: 14),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: attraction.suitableFor
+                      .map(
+                        (e) => Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: city.color.withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        '✓ $e',
+                        style: TextStyle(
+                          color: city.color,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  )
+                      .toList(),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            if (checked) {
+                              TravelAppState.checkedAttractions.remove(key);
+                              if (TravelAppState.totalPoints >= 10) {
+                                TravelAppState.totalPoints -= 10;
+                              }
+                            } else {
+                              TravelAppState.checkedAttractions.add(key);
+                              TravelAppState.totalPoints += 10;
+                            }
+                          });
+                          if (!checked) {
+                            _showCheckinSuccess(attraction.name, city.color);
+                          }
+                        },
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          padding: const EdgeInsets.symmetric(vertical: 13),
+                          decoration: BoxDecoration(
+                            color: checked ? city.color : Colors.grey.shade100,
+                            borderRadius: BorderRadius.circular(AppTheme.radiusM),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                checked
+                                    ? Icons.check_circle_rounded
+                                    : Icons.add_location_rounded,
+                                color: checked ? Colors.white : Colors.black54,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                checked ? '已打卡' : '点击打卡',
+                                style: TextStyle(
+                                  color:
+                                  checked ? Colors.white : Colors.black87,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    GestureDetector(
+                      onTap: () => _showShareDialog(attraction.name),
+                      child: Container(
+                        padding: const EdgeInsets.all(13),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(AppTheme.radiusM),
+                        ),
+                        child: const Icon(Icons.share_rounded,
+                            color: Colors.black54, size: 20),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showCheckinSuccess(String name, Color color) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape:
+        RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('🎉', style: TextStyle(fontSize: 56)),
+            const SizedBox(height: 14),
+            const Text(
+              '打卡成功！',
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text(name, style: const TextStyle(color: Colors.black54)),
+            const SizedBox(height: 14),
+            Container(
+              padding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                '+10 旅行积分',
+                style: TextStyle(color: color, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('太棒了！'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showShareDialog(String name) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (_) => Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              '分享景点',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _shareOption('📱', '微信'),
+                _shareOption('🐦', '微博'),
+                _shareOption('📷', '朋友圈'),
+                _shareOption('🔗', '复制链接'),
+              ],
+            ),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _shareOption(String emoji, String label) {
+    return GestureDetector(
+      onTap: () => Navigator.pop(context),
+      child: Column(
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: Colors.grey.shade100,
+              shape: BoxShape.circle,
+            ),
+            child: Center(
+                child: Text(emoji, style: const TextStyle(fontSize: 26))),
+          ),
+          const SizedBox(height: 8),
+          Text(label,
+              style: const TextStyle(fontSize: 13, color: Colors.black54)),
+        ],
+      ),
+    );
+  }
+
+  // ✨ 优化后的美食标签页 —— 带图片
+  Widget _buildFoodsTab(CityData city) {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        // 顶部统计条
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [city.color, city.secondaryColor],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(AppTheme.radiusL),
+            boxShadow: AppTheme.cardShadow(city.color, opacity: 0.25),
+          ),
+          child: Row(
+            children: [
+              const Text('🍽️', style: TextStyle(fontSize: 36)),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${city.name}特色美食',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '共 ${city.foods.length} 道精选美味',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.85),
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        ...city.foods.map(
+              (food) => Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: _buildPremiumFoodCard(city, food),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ✨ 重新设计的美食卡片 —— 大图 + 信息分层
+  Widget _buildPremiumFoodCard(CityData city, Food food) {
+    final isFav = TravelAppState.favoriteFoods.contains(food.name);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(AppTheme.radiusL),
+        boxShadow: AppTheme.softShadow,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 美食图片 —— 顶部大图
+          Stack(
+            children: [
+              SmartImage(
+                url: food.imageUrl,
+                height: 180,
+                width: double.infinity,
+                fallbackColor: city.color,
+                fallbackEmoji: food.emoji,
+                borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(AppTheme.radiusL)),
+              ),
+              // 价格胶囊
+              Positioned(
+                bottom: 12,
+                left: 12,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 6,
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text('💰',
+                          style: const TextStyle(fontSize: 12)),
+                      const SizedBox(width: 4),
+                      Text(
+                        '人均 ¥${food.price}',
+                        style: TextStyle(
+                          color: city.color,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              // 收藏按钮
+              Positioned(
+                top: 12,
+                right: 12,
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      if (isFav) {
+                        TravelAppState.favoriteFoods.remove(food.name);
+                      } else {
+                        TravelAppState.favoriteFoods.add(food.name);
+                      }
+                    });
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 6,
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      isFav
+                          ? Icons.favorite_rounded
+                          : Icons.favorite_border_rounded,
+                      color: isFav ? Colors.red : Colors.grey,
+                      size: 20,
+                    ),
+                  ),
+                ),
+              ),
+              // 评分徽章
+              Positioned(
+                top: 12,
+                left: 12,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.55),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.star_rounded,
+                          color: Colors.amber, size: 14),
+                      const SizedBox(width: 3),
+                      Text(
+                        '${food.rating}.0',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          // 内容区
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(food.emoji, style: const TextStyle(fontSize: 22)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        food.name,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Icon(Icons.place_outlined,
+                        size: 14, color: city.color),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        food.area,
+                        style: TextStyle(
+                            color: city.color,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(AppTheme.radiusM),
+                  ),
+                  child: Text(
+                    food.description,
+                    style: const TextStyle(
+                        color: Colors.black54, height: 1.6, fontSize: 13),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRoutesTab(CityData city) {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: city.routes
+          .map((route) => Padding(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: _buildPremiumRouteCard(city, route),
+      ))
+          .toList(),
+    );
+  }
+
+  Widget _buildPremiumRouteCard(CityData city, RoutePlan route) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(AppTheme.radiusL),
+        boxShadow: AppTheme.softShadow,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: city.color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(Icons.route_rounded, color: city.color, size: 22),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  route.title,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: city.color,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          ...route.items.asMap().entries.map(
+                (entry) {
+              final index = entry.key;
+              final item = entry.value;
+              final isLast = index == route.items.length - 1;
+
+              return IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(
+                      width: 80,
+                      child: Text(
+                        item.time,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                          color: Colors.black54,
+                        ),
+                      ),
+                    ),
+                    Column(
+                      children: [
+                        Container(
+                          width: 14,
+                          height: 14,
+                          decoration: BoxDecoration(
+                            color: city.color,
+                            shape: BoxShape.circle,
+                            border:
+                            Border.all(color: Colors.white, width: 2),
+                            boxShadow: [
+                              BoxShadow(
+                                color: city.color.withOpacity(0.3),
+                                blurRadius: 4,
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (!isLast)
+                          Expanded(
+                            child: Container(
+                              width: 2,
+                              color: city.color.withOpacity(0.25),
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.only(bottom: isLast ? 0 : 18),
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: city.color.withOpacity(0.05),
+                            borderRadius:
+                            BorderRadius.circular(AppTheme.radiusM),
+                          ),
+                          child: Row(
+                            children: [
+                              Text(item.icon,
+                                  style: const TextStyle(fontSize: 16)),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  item.place,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    height: 1.4,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('路线已保存到我的行程'),
+                    behavior: SnackBarBehavior.floating,
+                    shape: StadiumBorder(),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.bookmark_add_rounded),
+              label: const Text('收藏此路线'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: city.color,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppTheme.radiusM),
+                ),
+                elevation: 0,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ==================== AI推荐页 ====================
+
+class AIQuizPage extends StatefulWidget {
+  const AIQuizPage({super.key});
+
+  @override
+  State<AIQuizPage> createState() => _AIQuizPageState();
+}
+
+class _AIQuizPageState extends State<AIQuizPage>
+    with SingleTickerProviderStateMixin {
+  int currentStep = 0;
+  final List<int?> answers = [null, null, null];
+  late AnimationController _animController;
+  late Animation<Offset> _slideAnim;
+
+  final List<Map<String, dynamic>> questions = [
+    {
+      'question': '你偏好哪种旅行体验？',
+      'emoji': '🌿',
+      'options': [
+        {'label': '自然生态', 'emoji': '🌿', 'desc': '湿地、候鸟、绿色大地'},
+        {'label': '海边风光', 'emoji': '🌊', 'desc': '海岸线、海风、海鲜'},
+        {'label': '历史文化', 'emoji': '🏛️', 'desc': '古城、博物馆、人文'},
+      ],
+    },
+    {
+      'question': '这次旅行最主要的目的？',
+      'emoji': '🎯',
+      'options': [
+        {'label': '放松心情', 'emoji': '😌', 'desc': '慢节奏、安静、远离城市'},
+        {'label': '拍照打卡', 'emoji': '📸', 'desc': '网红景点、美景、记录'},
+        {'label': '学习增长', 'emoji': '📚', 'desc': '了解历史、增长见识'},
+      ],
+    },
+    {
+      'question': '最让你心动的是？',
+      'emoji': '💫',
+      'options': [
+        {'label': '万鸟齐飞的湿地', 'emoji': '🦅', 'desc': '震撼的自然奇观'},
+        {'label': '碧波荡漾的大海', 'emoji': '🏖️', 'desc': '浪漫的海边时光'},
+        {'label': '千年历史的古楼', 'emoji': '🗼', 'desc': '厚重的历史底蕴'},
+      ],
+    },
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
+    _slideAnim = Tween<Offset>(
+      begin: const Offset(0.3, 0),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _animController, curve: Curves.easeOut));
+    _animController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
+  }
+
+  void _nextStep() {
+    _animController.reset();
+    setState(() => currentStep++);
+    _animController.forward();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F6FA),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF4A0072), Color(0xFF1A237E)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: const Icon(Icons.arrow_back_rounded,
+                            color: Colors.white, size: 22),
+                      ),
+                    ),
+                    const Expanded(
+                      child: Text(
+                        'AI 旅行顾问',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 42),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          currentStep < questions.length
+                              ? '问题 ${currentStep + 1} / ${questions.length}'
+                              : '分析完成',
+                          style: const TextStyle(
+                              color: Colors.white70, fontSize: 13),
+                        ),
+                        Text(
+                          '${((currentStep / questions.length) * 100).round()}%',
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: LinearProgressIndicator(
+                        value: currentStep / questions.length,
+                        backgroundColor: Colors.white24,
+                        valueColor: const AlwaysStoppedAnimation<Color>(
+                            Colors.white),
+                        minHeight: 6,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              Expanded(
+                child: Container(
+                  margin: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(AppTheme.radiusXL),
+                  ),
+                  child: currentStep < questions.length
+                      ? SlideTransition(
+                    position: _slideAnim,
+                    child: _buildQuestionCard(),
+                  )
+                      : _buildResultCard(),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuestionCard() {
+    final q = questions[currentStep];
+    final options = q['options'] as List<Map<String, dynamic>>;
+
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(q['emoji'] as String, style: const TextStyle(fontSize: 44)),
+          const SizedBox(height: 14),
+          Text(
+            q['question'] as String,
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              height: 1.2,
+            ),
+          ),
+          const SizedBox(height: 24),
+          ...List.generate(options.length, (index) {
+            final option = options[index];
+            final selected = answers[currentStep] == index;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 14),
+              child: GestureDetector(
+                onTap: () => setState(() => answers[currentStep] = index),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: selected
+                        ? const Color(0xFF4A0072).withOpacity(0.08)
+                        : Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(AppTheme.radiusM),
+                    border: Border.all(
+                      color: selected
+                          ? const Color(0xFF4A0072)
+                          : Colors.grey.shade200,
+                      width: 1.5,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: selected
+                              ? const Color(0xFF4A0072).withOpacity(0.1)
+                              : Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Center(
+                          child: Text(option['emoji'] as String,
+                              style: const TextStyle(fontSize: 22)),
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              option['label'] as String,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                color: selected
+                                    ? const Color(0xFF4A0072)
+                                    : Colors.black87,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              option['desc'] as String,
+                              style: const TextStyle(
+                                  color: Colors.black45, fontSize: 13),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (selected)
+                        const Icon(Icons.check_circle_rounded,
+                            color: Color(0xFF4A0072), size: 22),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }),
+          const Spacer(),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: answers[currentStep] == null ? null : _nextStep,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF4A0072),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppTheme.radiusM),
+                ),
+                disabledBackgroundColor: Colors.grey.shade200,
+                elevation: 0,
+              ),
+              child: Text(
+                currentStep == questions.length - 1 ? '🎯 查看专属推荐' : '下一题 →',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildResultCard() {
+    final result = _calculateResult();
+    final city = result.city;
+
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('🎉', style: TextStyle(fontSize: 44)),
+          const SizedBox(height: 14),
+          const Text(
+            '为你找到了\n最适合的城市！',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              height: 1.3,
+            ),
+          ),
+          const SizedBox(height: 20),
+          // ✨ 结果卡片带城市图片
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(AppTheme.radiusL),
+              boxShadow: AppTheme.cardShadow(city.color, opacity: 0.3),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(AppTheme.radiusL),
+              child: Stack(
+                children: [
+                  SmartImage(
+                    url: city.imageUrl,
+                    height: 160,
+                    width: double.infinity,
+                    fallbackColor: city.color,
+                    fallbackEmoji: city.heroEmoji,
+                  ),
+                  Positioned.fill(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            city.color.withOpacity(0.7),
+                            city.color.withOpacity(0.95),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(18),
+                    child: Row(
+                      children: [
+                        Text(city.heroEmoji,
+                            style: const TextStyle(fontSize: 48)),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                city.name,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(
+                                city.titleTag,
+                                style: const TextStyle(
+                                    color: Colors.white70, fontSize: 14),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Column(
+                          children: [
+                            Text(
+                              '${result.match}%',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 28,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const Text(
+                              '匹配度',
+                              style: TextStyle(
+                                  color: Colors.white70, fontSize: 12),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              borderRadius: BorderRadius.circular(AppTheme.radiusM),
+            ),
+            child: Text(
+              result.reason,
+              style: const TextStyle(
+                fontSize: 15,
+                height: 1.6,
+                color: Colors.black87,
+              ),
+            ),
+          ),
+          const Spacer(),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () {
+                    setState(() {
+                      currentStep = 0;
+                      for (int i = 0; i < answers.length; i++) {
+                        answers[i] = null;
+                      }
+                    });
+                    _animController.forward();
+                  },
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppTheme.radiusM),
+                    ),
+                  ),
+                  child: const Text('重新测试'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                flex: 2,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    TravelAppState.exploredCities.add(city.name);
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => CityDetailPage(city: city)),
+                    );
+                    if (mounted) setState(() {});
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: city.color,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppTheme.radiusM),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: const Text(
+                    '立即探索 →',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  AIResult _calculateResult() {
+    int dongyingScore = 0;
+    int yantaiScore = 0;
+    int liaochengScore = 0;
+
+    if (answers[0] == 0) dongyingScore += 3;
+    if (answers[0] == 1) yantaiScore += 3;
+    if (answers[0] == 2) liaochengScore += 3;
+
+    if (answers[1] == 0) {
+      dongyingScore += 2;
+      yantaiScore += 1;
+    }
+    if (answers[1] == 1) yantaiScore += 2;
+    if (answers[1] == 2) liaochengScore += 2;
+
+    if (answers[2] == 0) dongyingScore += 3;
+    if (answers[2] == 1) yantaiScore += 3;
+    if (answers[2] == 2) liaochengScore += 3;
+
+    final scores = {
+      cities[0]: dongyingScore,
+      cities[1]: yantaiScore,
+      cities[2]: liaochengScore,
+    };
+
+    final bestEntry =
+    scores.entries.reduce((a, b) => a.value >= b.value ? a : b);
+    final bestCity = bestEntry.key;
+    final bestScore = bestEntry.value;
+
+    String reason;
+    if (bestCity.name == '东营') {
+      reason = '根据你的选择，你更偏爱生态自然景观，享受湿地的宁静与候鸟飞舞的壮观。东营的黄河口湿地和天鹅湖将为你带来最纯粹的自然体验。';
+    } else if (bestCity.name == '烟台') {
+      reason = '你明显更向往海边风光和轻松浪漫的旅行节奏。烟台迷人的海岸线、神话传说中的蓬莱阁，以及丰富的海鲜美食，将给你留下难忘的旅行记忆。';
+    } else {
+      reason = '你对历史文化和古城风貌有着浓厚兴趣。聊城的光岳楼、东昌湖和大运河文化将带你穿越时空，感受千年历史的厚重底蕴。';
+    }
+
+    final match = 70 + bestScore * 3;
+
+    return AIResult(
+      city: bestCity,
+      match: match > 98 ? 98 : match,
+      reason: reason,
+    );
+  }
+}
+
+class AIResult {
+  final CityData city;
+  final int match;
+  final String reason;
+
+  AIResult({required this.city, required this.match, required this.reason});
+}
